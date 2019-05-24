@@ -1,0 +1,160 @@
+---
+title: "Studi Kasus : OK Clean"
+author: "Andika Heru Pratama"
+date: "24/5/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+OK-CLEAN merupakan layanan kebersihan profesional berbasis aplikasi yang tersedia di berbagai kota di Indonesia. Layanan yang diberikan meliputi membersihkan taman rumah, ruang tamu, dapur, toilet, dan lain – lain. Layanan tersebut dikerjakan oleh Mitra OK-CLEAN.
+
+Kota Bandung merupakan salah satu wilayah cakupan layanan OK-CLEAN. Di Kota Kembang ini, layanan kebersihan telah dirilis sejak 6 bulan belakangan. Ribuan konsumen telah menggunakan layanan tersebut. Namun, Manajer Umum OK-CLEAN menilai bahwa pasar tersebut belum memuaskan dan masih terdapat peluang yang sangat besar untuk dieksploitasi.
+
+Manajer Umum memerintahkan Manajer Pemasaran untuk melakukan promosi besar – besaran selama 120 hari penuh. Manajer Pemasaran mulai melakukan perencanaan strategi pemasaran dengan berkolaborasi bersama Manajer Layanan Konsumen dan Manajer Keuangan. Upaya pemasaran direncanakan dengan memberikan potongan harga yang semakin besar di akhir periode promosi. Namun, keputusan tersebut memiliki risiko yaitu Mitra OK-CLEAN sering melakukan pelayanan yang tidak sesuai dengan standar ketika konsumen memesan layanan dengan menggunakan potongan harga yang besar.
+
+Bagian Layanan Konsumen dan Bagian Keuangan selalu erat kaitannya dengan perilaku Mitra OK-CLEAN. Ketika Mitra OK-CLEAN dinilai memiliki kinerja yang buruk atau merugikan konsumen, maka komplain yang diterima oleh Bagian Layanan Konsumen OK-CLEAN akan meningkat dan ganti rugi yang harus diproses oleh Bagian Keuangan juga semakin besar nilainya.
+Strategi promosi selama 120 hari telah dieksekusi sesuai dengan yang direncakan. Pergerakan jumlah konsumen diarsipkan oleh Manajer Pemasaran pada dataset [**"001_ok-clean_pengguna.csv"**](https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/001_ok-clean_pengguna.csv), pergerakan jumlah komplain diarsipkan oleh Manajer Layanan Konsumen pada dataset [**"001_ok-clean_komplain.csv"**](https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/001_ok-clean_komplain.csv), dan pergerakan  keuntungan perusahaan diarsipkan oleh Manajer Keuangan pada dataset [**"001_ok-clean_keuntungan.csv"**](https://github.com/r-academy/mlearn-capstone/raw/master/data-raw/001_ok-clean_keuntungan.csv).
+
+Manajer Umum OK-CLEAN mengadakan pertemuan bersama Manajer Pemasaran, Manajer Layanan Konsumen, dan Manajer Keuangan segera setelah periode promosi berakhir. Pertemuan tersebut membahas tentang proyeksi pergerakan jumlah konsumen, komplain, dan keuntungan di masa yang akan datang berdasarkan data yang diperoleh selama 120 hari promosi.
+
+Untuk itu, Manajer Umum meminta masing – masing manajer untuk menyediakan data sebagai berikut:
+
+**Bagi Manajer Pemasaran**
+
++ Pola yang terbentuk dari data arsip jumlah pengguna dengan menggunakan grafik yang menarik.
++ Prediksi jumlah pengguna diakhir periode ketika upaya pemasaran dilanjutkan menjadi 130 hari.
++ Prediksi jumlah pengguna diakhir periode ketika upaya pemasaran dilanjutkan menjadi 150 hari.
++ Prediksi jumlah pengguna diakhir periode ketika upaya pemasaran dilanjutkan menjadi 200 hari.
+
+**Bagi Manajer Layanan Konsumen**
+
++ Pola yang terbentuk dari data arsip jumlah komplain dengan menggunakan grafik yang menarik.
++ Prediksi jumlah komplain diakhir periode ketika upaya pemasaran dilanjutkan menjadi 130 hari.
++ Prediksi jumlah komplain diakhir periode ketika upaya pemasaran dilanjutkan menjadi 150 hari.
++ Prediksi jumlah komplain diakhir periode ketika upaya pemasaran dilanjutkan menjadi 200 hari.
+
+**Bagi Manajer Keuangan:**
+
++ Pola yang terbentuk dari data arsip jumlah keuntungan dengan menggunakan grafik yang menarik.
++ Prediksi jumlah keuntungan diakhir periode ketika upaya pemasaran dilanjutkan menjadi 130 hari.
++ Prediksi jumlah keuntungan diakhir periode ketika upaya pemasaran dilanjutkan menjadi 150 hari.
++ Prediksi jumlah keuntungan diakhir periode ketika upaya pemasaran dilanjutkan menjadi 200 hari.
+
+**Bagi Ketiga Manajer**
+
++ Adakah pola mencurigakan yang terjadi dalam data pada masing – masing arsip?
++ Kapan pola tersebut tersebut mulai terjadi?
++ Mengapa hal tersebut dapat terjadi?
++ Akankah temuan tersebut jika berlangsung secara terus – menerus dapat merugikan perusahaan?
++ Keputusan apa yang sebaiknya diambil oleh perusahaan?
+
+
+#import library
+
+Sebelum dilakukan analisa library yang diperlukan perlu di aktifkan terlebih dahulu. Library yang dibutuhkan adalah:
+
+- **tidyverse**: library data science yang mencakup `tidyr` dan `dplyr` (transformasi data), `readr`(membaca file), `ggplot2` (visualisasi data), serta `purrr` (iterasi).
+- **gridExtra**: menggabungkan plot menjadi satu jendela.
+
+```{r import}
+library(tidyverse)
+library(gridExtra) 
+```
+
+#membaca data
+
+
+```{r}
+daftar_file <- list.files("./data-raw", pattern="001", full.names = TRUE)
+df2 <- map_dfc(list_data, bind_cols)
+
+# cek data
+df2
+str(df2)
+
+
+```
+
+#data cleaning
+```{r}
+df_cln <- df2 %>% 
+  select(hari_promosi, contains("jumlah"))
+```
+
+#visualisasi data
+
+```{r}
+theme_set(theme_classic())
+
+keuntungan <- ggplot(df_cln,aes(hari_promosi,jumlah_keuntungan)) + geom_line() +
+  labs(title="Keuntungan",x="hari promosi", y="jumlah keuntungan") + geom_smooth(method = "lm")
+
+komplain <- ggplot(df_cln,aes(hari_promosi,jumlah_komplain)) + geom_line() +
+  labs(title="komplain",x="hari promosi", y="jumlah komplain")+ geom_smooth(method = "lm")
+
+pengguna <- ggplot(df_cln,aes(hari_promosi,jumlah_pengguna)) + geom_line() +
+  labs(title="pengguna",x="hari promosi", y="jumlah pengguna")+ geom_smooth(method = "lm")
+
+grid.arrange(keuntungan, komplain, pengguna,
+          ncol=2,nrow=2)
+```
+
+
+```{r}
+theme_set(theme_classic())
+
+keuntungan <- ggplot(df_cln,aes(hari_promosi,1/log10(jumlah_keuntungan))) + geom_line() +
+  labs(title="Keuntungan",x="hari promosi", y="invers log10 jumlah keuntungan") + geom_smooth(method = "lm")
+
+komplain <- ggplot(df_cln,aes(hari_promosi,log10(jumlah_komplain))) + geom_line() +
+  labs(title="komplain",x="hari promosi", y="log10 jumlah komplain")+ geom_smooth(method = "lm")
+
+pengguna <- ggplot(df_cln,aes(hari_promosi,jumlah_pengguna)) + geom_line() +
+  labs(title="pengguna",x="hari promosi", y="jumlah pengguna")+ geom_smooth(method = "lm")
+
+grid.arrange(keuntungan, komplain, pengguna,
+          ncol=2,nrow=2)
+```
+
+
+
+#membuat model 
+```{r}
+par(mfrow=c(2,2))
+# model keuntungan
+model_keuntungan = lm(1/log10(jumlah_keuntungan)~hari_promosi, data=df2)
+summary(model_keuntungan)
+plot(model_keuntungan)
+
+# model komplain
+model_komplain = lm(log10(jumlah_komplain)~hari_promosi, data=df2)
+summary(model_komplain)
+plot(model_komplain)
+
+# model pengguna
+model_pengguna = lm(jumlah_pengguna~hari_promosi, data=df2)
+summary(model_pengguna)
+plot(model_pengguna)
+```
+
+#membuat prediksi dari model untuk hari promosi ke 130, 150 dan 200
+
+```{r}
+## prediksi keuntungan
+(1/predict(model_keuntungan, newdata=data.frame(hari_promosi=(c(130,150,200))), interval="confidence"))^(10)
+## prediksi komplain
+predict(model_komplain, newdata=data.frame(hari_promosi=(c(130,150,200))), interval="confidence")^10
+## prediksi pengguna
+predict(model_pengguna, newdata=data.frame(hari_promosi=(c(130,150,200))), interval="confidence") 
+```
+
+#Analisa bagi ketiga manager
++ Adakah pola mencurigakan yang terjadi dalam data pada masing – masing arsip?
+  - 
++ Kapan pola tersebut tersebut mulai terjadi?
++ Mengapa hal tersebut dapat terjadi?
++ Akankah temuan tersebut jika berlangsung secara terus – menerus dapat merugikan perusahaan?
++ Keputusan apa yang sebaiknya diambil oleh perusahaan?
+
